@@ -13,14 +13,17 @@
       padding-top: 80px;
       max-width: 1400px;
     }
-    .bg-green {
-      background-color: rgba(102,178,102,.2);
+    .b-pass, .b-pass:focus, .b-pass:active {
+      color: black;
+      background-color: rgba(102,178,102,.2) !important;
     }
-    .bg-red {
-      background-color: rgba(255,76,76,.2);
+    .b-fail, .b-fail:focus, .b-fail:active {
+      color: black;
+      background-color: rgba(255,76,76,.2) !important;
     }
-    .bg-blue {
-      background-color: rgba(127,127,255,.2);
+    .b-info, .b-info:focus, .b-info:active {
+      color: black;
+      background-color: rgba(128,163,221,.2) !important;
     }
     .totals {
       display: inline-block;
@@ -47,18 +50,14 @@
       <div class="row">
         <h2>Findings</h2>
         <div class="accordion" id="accordion">
+          {% for res_type in totals['results_summary'] %}
           <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
-              <button class="accordion-button collapsed bg-red" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                Fails (<strong>{{ totals['fails'] | length }} total</strong>{# ,
-                {% for i in totals['all_by_sev'] %}
-                  {{ totals['all_by_sev'][i] | length }}
-                  {% if i == '' %}unmarked{% else %}{{ i }}{% endif %}{% if not loop.last %}, {% endif %}
-                {% endfor %} #}
-                )
+            <h2 class="accordion-header" id="heading{{ loop.index }}">
+              <button class="accordion-button collapsed b-{{ res_type }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                {{ res_type | capitalize }} (<strong>{{ totals['results_summary'][res_type] | length }} total</strong>)
               </button>
             </h2>
-            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion">
+            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#accordion">
               <div class="accordion-body">
                 <table class="table table-sm" data-toggle="table">
                 <thead>
@@ -74,17 +73,16 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for i in totals['fails'] %}
-                    {% set d = data[i] %}
+                  {% for i in totals['results_summary'][res_type] %}
                     <tr>
-                      <td>{{ d['account_id'] }}</td>
-                      <td>{{ d['region'] | truncate(12) }}</td>
-                      <td>{{ d['title_id'] }}</td>
-                      <td><strong>{{ d['title_text'] }}</strong></td>
-                      <td>{{ d['notes'] }}</td>
-                      <td>{{ d['compliance'] }}</td>
-                      <td>{{ d['severity'] }}</td>
-                      <td>{{ d['service_name'] }}</td>
+                      <td>{{ i['account_id'] }}</td>
+                      <td>{{ i['region'] | truncate(12) }}</td>
+                      <td>{{ i['title_id'] }}</td>
+                      <td><strong>{{ i['title_text'] }}</strong></td>
+                      <td>{{ i['notes'] }}</td>
+                      <td>{{ i['compliance'] }}</td>
+                      <td>{{ i['severity'] }}</td>
+                      <td>{{ i['service_name'] }}</td>
                     </tr>
                   {% endfor %}
                   </tbody>
@@ -92,87 +90,9 @@
               </div>
             </div>
           </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingTwo">
-              <button class="accordion-button collapsed bg-blue" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                Infos (<strong>{{ totals['infos'] | length }} total</strong>)
-              </button>
-            </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion">
-              <div class="accordion-body">
-                <table class="table table-sm" data-toggle="table">
-                <thead>
-                  <tr>
-                    <th data-sort="int">Account ID</th>
-                    <th data-sort="string">Region</th>
-                    <th data-sort="string">ID</th>
-                    <th data-sort="string">Text</th>
-                    <th data-sort="string">Notes</th>
-                    <th data-sort="string">Compliance</th>
-                    <th data-sort="string">Severity</th>
-                    <th data-sort="string">Service Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for i in totals['infos'] %}
-                    {% set d = data[i] %}
-                    <tr>
-                      <td>{{ d['account_id'] }}</td>
-                      <td>{{ d['region'] | truncate(12) }}</td>
-                      <td>{{ d['title_id'] }}</td>
-                      <td><strong>{{ d['title_text'] }}</strong></td>
-                      <td>{{ d['notes'] }}</td>
-                      <td>{{ d['compliance'] }}</td>
-                      <td>{{ d['severity'] }}</td>
-                      <td>{{ d['service_name'] }}</td>
-                    </tr>
-                  {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingThree">
-              <button class="accordion-button collapsed bg-green" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                Passes (<strong>{{ totals['passes'] | length }} total</strong>)
-              </button>
-            </h2>
-            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordion">
-              <div class="accordion-body">
-                <table class="table table-sm" data-toggle="table">
-                <thead>
-                  <tr>
-                    <th data-sort="int">Account ID</th>
-                    <th data-sort="string">Region</th>
-                    <th data-sort="string">ID</th>
-                    <th data-sort="string">Text</th>
-                    <th data-sort="string">Notes</th>
-                    <th data-sort="string">Compliance</th>
-                    <th data-sort="string">Severity</th>
-                    <th data-sort="string">Service Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for i in totals['passes'] %}
-                    {% set d = data[i] %}
-                    <tr>
-                      <td>{{ d['account_id'] }}</td>
-                      <td>{{ d['region'] | truncate(12) }}</td>
-                      <td>{{ d['title_id'] }}</td>
-                      <td><strong>{{ d['title_text'] }}</strong></td>
-                      <td>{{ d['notes'] }}</td>
-                      <td>{{ d['compliance'] }}</td>
-                      <td>{{ d['severity'] }}</td>
-                      <td>{{ d['service_name'] }}</td>
-                    </tr>
-                  {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        {% endfor %}
         </div>
+
       </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
@@ -196,13 +116,13 @@
     var result_doughnut = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Passes', 'Fails', 'Infos'],
+            labels: ['Pass', 'Fail', 'Info'],
             datasets: [{
                 label: '',
                 data: [
-                  {{ totals['passes'] | length }},
-                  {{ totals['fails'] | length }},
-                  {{ totals['infos'] | length }}
+                  {{ totals['results_summary']['pass'] | length }},
+                  {{ totals['results_summary']['fail'] | length }},
+                  {{ totals['results_summary']['info'] | length }}
                 ],
                 backgroundColor: [
                     'rgba(102,178,102, 0.2)',

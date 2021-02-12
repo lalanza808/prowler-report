@@ -131,3 +131,4 @@ dmypy.json
 # Dont store CSV files or reports
 *.csv
 report.html
+*.json

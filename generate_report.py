@@ -16,6 +16,7 @@ def run():
         'passes_by_sev': {},
         'fails_by_sev': {},
         'infos_by_sev': {},
+        'results_by_check_id': {}
     }
 
     with open('template.html') as f:
@@ -43,6 +44,18 @@ def run():
             d = csv_data[idx]
             t = totals
 
+            # Capture results summary
+            rs = 'results_summary'
+            rl = d['result'].lower()
+            if rs not in totals:
+                t[rs] = dict()
+            if rl not in t[rs]:
+                t[rs][rl] = list()
+            t[rs][rl].append(d)
+
+            if d['title_id'] not in t['results_by_check_id']:
+                t['results_by_check_id'][d['title_id']] = csv_data[idx]
+
             if d['account_id'] not in t['accounts']:
                 t['accounts'].append(d['account_id'])
 
@@ -51,18 +64,15 @@ def run():
 
             t['scan_results'].append(idx)
 
-            if d['result'] == 'PASS':
-                t['passes'].append(idx)
-            elif d['result'] == 'FAIL':
-                t['fails'].append(idx)
-            elif d['result'] == 'INFO':
-                t['infos'].append(idx)
-
             l = d['severity'].lower()
             if l not in t['all_by_sev']:
                 t['all_by_sev'][l] = list()
             if idx not in t['all_by_sev'][l]:
                 t['all_by_sev'][l].append(idx)
+
+    # list(OrderedDict.fromkeys([x['severity'].lower() for x in data.values() if x['severity'].lower()]))
+
+    # print(totals['results_summary'])
 
     tpl = Template(tpl)
     rendered = tpl.render(data=csv_data, totals=totals)
